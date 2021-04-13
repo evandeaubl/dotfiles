@@ -1,0 +1,4 @@
+#!/bin/sh
+
+xrandr -o "$1"
+xinput map-to-output 12 eDP1
