@@ -1,0 +1,38 @@
+#!/bin/sh
+
+CONTAINER_BASE=/virt/gentoo-home
+RUNAS=$USER
+
+while getopts b:u: OPT
+do
+  case $OPT in
+    b) CONTAINER_BASE="$OPTARG" ;;
+    u) RUNAS="$OPTARG" ;;
+  esac
+done
+
+shift $(($OPTIND-1))
+
+COMMAND="/bin/login -f $RUNAS"
+if [ $# != 0 ]
+then
+  COMMAND="/bin/su -l $RUNAS -c "
+fi
+
+if [ -x $CONTAINER_BASE/root/usr/bin/tini ]
+then
+  COMMAND="/usr/bin/tini -- $COMMAND"
+elif [ -x $CONTAINER_BASE/root/bin/tini ]
+then
+  COMMAND="/bin/tini -- $COMMAND"
+fi
+
+test -x $CONTAINER_BASE/bin/mount-home && SCRIPT_OPTION="-i $CONTAINER_BASE/bin/mount-home"
+
+if [ -z "$*" ]
+then
+  contain -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 $SCRIPT_OPTION -n $CONTAINER_BASE/root /usr/bin/env TERM=xterm $COMMAND
+else
+  contain -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 $SCRIPT_OPTION -n $CONTAINER_BASE/root /usr/bin/env TERM=xterm $COMMAND "$*"
+fi
+

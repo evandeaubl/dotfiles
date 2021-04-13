@@ -1,0 +1,45 @@
+#!/bin/sh
+
+CONTAINER_BASE="$1"
+
+CONTAINER_BIN=$CONTAINER_BASE/bin
+CONTAINER_ROOT=$CONTAINER_BASE/root
+
+TAR_CACHE=$HOME/.cache/gentoo
+LATEST_CHROOT_TAR=stage3-amd64-20210324T214503Z.tar.xz
+DOWNLOAD_BASE='https://bouncer.gentoo.org/fetch/root/all/releases/amd64/autobuilds/20210324T214503Z'
+
+{
+  mkdir -p $TAR_CACHE
+  cd $TAR_CACHE
+  test -f $LATEST_CHROOT_TAR || curl -OL "$DOWNLOAD_BASE/$LATEST_CHROOT_TAR"
+  test -f tini || curl -L -o tini "https://github.com/krallin/tini/releases/download/v0.19.0/tini-static-amd64"
+}
+
+mkdir -p "$CONTAINER_BIN"
+cat > "$CONTAINER_BIN"/mount-home <<EOF
+#!/bin/sh
+
+mkdir -p home
+mount --rbind /home home
+
+chown root:root dev/console
+
+ln -s /proc/self/fd dev/fd
+
+mkdir -p dev/shm
+mount -t tmpfs none dev/shm
+mount -t tmpfs none tmp
+EOF
+chmod +x "$CONTAINER_BIN"/mount-home
+
+mkdir -p "$CONTAINER_ROOT"
+pseudo -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 tar -C "$CONTAINER_ROOT" -xJf $TAR_CACHE/$LATEST_CHROOT_TAR
+pseudo -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 cp "$TAR_CACHE/tini" "$CONTAINER_ROOT"/bin
+pseudo -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 chmod +x "$CONTAINER_ROOT"/bin/tini
+
+pseudo -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 cp /etc/resolv.conf "$CONTAINER_ROOT"/etc
+
+pseudo -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 rm -rf "$CONTAINER_ROOT"/dev/*
+
+contain -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 -i "$CONTAINER_BIN"/mount-home -n "$CONTAINER_ROOT" /usr/sbin/useradd -M -u 1000 -U evan

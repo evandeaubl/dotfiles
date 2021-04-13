@@ -1,0 +1,50 @@
+#!/bin/sh
+
+CONTAINER_BASE="$1"
+
+CONTAINER_BIN=$CONTAINER_BASE/bin
+CONTAINER_ROOT=$CONTAINER_BASE/root
+
+LATEST_CHROOT_TAR=kiss-chroot-2021.3-2.tar.xz
+
+{
+  mkdir -p $HOME/.cache/kiss
+  cd $HOME/.cache/kiss
+  test -f $LATEST_CHROOT_TAR || curl -OL "https://github.com/kiss-community/repo-main/releases/download/2021.3-2/$LATEST_CHROOT_TAR"
+}
+
+mkdir -p "$CONTAINER_BIN"
+cat > "$CONTAINER_BIN"/mount-home <<EOF
+#!/bin/sh
+
+mkdir -p home
+mount --rbind /home home
+
+chown root:root dev/console
+
+ln -s /proc/self/fd dev/fd
+
+mkdir -p dev/shm
+mount -t tmpfs none dev/shm
+mount -t tmpfs none tmp
+EOF
+chmod +x "$CONTAINER_BIN"/mount-home
+
+mkdir -p "$CONTAINER_ROOT"
+pseudo -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 tar -C "$CONTAINER_ROOT" -xJf $HOME/.cache/kiss/$LATEST_CHROOT_TAR
+
+pseudo -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 cp /etc/resolv.conf "$CONTAINER_ROOT"/etc
+
+#pseudo -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 chmod 1777 "$CONTAINER_ROOT"/tmp
+
+# this will prompt for new password
+contain -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 -i "$CONTAINER_BIN"/mount-home -n "$CONTAINER_ROOT" /usr/bin/adduser -H evan
+contain -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 -i "$CONTAINER_BIN"/mount-home -n "$CONTAINER_ROOT" /usr/bin/addgroup evan wheel
+
+# this depends on sudo package already been built
+contain -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 -i "$CONTAINER_BIN"/mount-home -n "$CONTAINER_ROOT" /usr/bin/env HOME=/root /usr/bin/kiss i $HOME/.cache/kiss/bin/sudo*
+#contain -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 -i "$CONTAINER_BIN"/mount-home -n "$CONTAINER_ROOT" /usr/bin/env HOME=/root /usr/bin/kiss b sudo
+#contain -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 -i "$CONTAINER_BIN"/mount-home -n "$CONTAINER_ROOT" /usr/bin/env HOME=/root /usr/bin/kiss i sudo
+#contain -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 -i "$CONTAINER_BIN"/mount-home -n "$CONTAINER_ROOT" rm -rf /root/.cache/kiss
+contain -u 0:100000:999,1000:1000:1 -g 0:100000:999,1000:1000:1 -i "$CONTAINER_BIN"/mount-home -n "$CONTAINER_ROOT" /usr/bin/sed -i 's/^# %wheel ALL=(ALL) ALL$/%wheel ALL=(ALL) ALL/' /etc/sudoers
+

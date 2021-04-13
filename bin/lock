@@ -1,0 +1,6 @@
+#!/bin/sh
+
+xset dpms force off
+xset dpms 0 0 15
+xsecurelock
+xset dpms 0 0 300
