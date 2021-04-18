@@ -1,0 +1,11 @@
+XTerm*faceName: DejaVuSansMono
+XTerm*faceSize: 10
+XTerm*background: black
+XTerm*foreground: white
+Xft.dpi: 168
+Xcursor.theme: Breeze_Snow
+Xcursor.size: 64
+rofi.dpi: 168
+xvkbd*Font: lucidasans-24
+xvkbd.windowGeometry: 1700x560-0-0
+xvkbd.keypad: false

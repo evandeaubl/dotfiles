@@ -1,0 +1,18 @@
+#!/bin/sh
+
+TERM=xterm
+
+echo "Dynamic {"
+
+TERM_PREFIX=""
+test "$2" = ssh && TERM_PREFIX="$TERM -e "
+
+cat "$1" | while read key value
+do
+  if test "$key" = "Host"
+  then
+    echo " Entry = \"$value\" { Actions = \"Exec $TERM_PREFIX$2 $value\" }"
+  fi
+done
+
+echo "}"

@@ -1,0 +1,35 @@
+#!/bin/sh
+
+if amixer -M get Master |tail -n1|grep '\[off\]' >/dev/null
+then
+  VOL="-mute-"
+else
+  VOL=$(amixer -M get Master|tail -n1|cut -d" " -f6|tr -d '[]')
+fi
+
+echo "Dynamic {"
+echo " Entry = \""$(date "+%a %b %d %Y - %H:%M")"\" { Actions = \"Exec source /dev/null\" }"
+
+if [ -f /sys/class/power_supply/BAT0/capacity ]
+then
+  echo " Entry = \"Battery: "$(cat /sys/class/power_supply/BAT0/capacity)"%\" { Actions = \"Exec source /dev/null\" }"
+fi
+
+if [ -x /usr/bin/cmus-remote ]
+then
+  STATUS=""
+  if cmus-remote -C status >/dev/null
+  then
+    ARTIST=$(cmus-remote -C status |grep "^tag artist "|cut -f3- -d" ")
+    SONG=$(cmus-remote -C status |grep "^tag title "|cut -f3- -d" ")
+    STATUS="$ARTIST - $SONG"
+    cmus-remote -C status | grep "status paused" >/dev/null && STATUS="$STATUS -paused-"
+    cmus-remote -C status | grep "status stopped" >/dev/null && STATUS="-not playing-"
+  else
+    STATUS="-not playing-"
+  fi
+  echo " Entry = \"Playing: $STATUS\" { Actions = \"Exec cmus-remote -C player-pause\" }"
+fi
+
+echo " Entry = \"Volume: $VOL\" { Actions = \"Exec amixer sset Master toggle\" }"
+echo "}"

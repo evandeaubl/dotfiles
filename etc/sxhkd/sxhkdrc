@@ -1,0 +1,39 @@
+mod4 + Return
+	xterm
+
+mod4 + b
+	firefox
+
+mod4 + p
+	rofi -show run
+
+mod4 + c
+	clsw $(pfw)
+
+mod4 + Up
+        chwso -r $(pfw)
+
+mod4 + Down
+        chwso -l $(pfw)
+
+XF86AudioMute
+	amixer sset Master toggle
+
+XF86AudioLowerVolume
+	amixer sset Master 5%-
+
+XF86AudioRaiseVolume
+	amixer sset Master 5%+
+
+XF86Search
+	firefox
+
+XF86MonBrightnessDown
+	xbacklight -2%
+
+XF86MonBrightnessUp
+	xbacklight +2%
+
+XF86LaunchA
+	rofi -show run
+

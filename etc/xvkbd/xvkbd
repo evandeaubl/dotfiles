@@ -1,0 +1,13 @@
+#quick_modifiers 1
+#shift_lock 0
+#altgr_lock 0
+#modifiers_lock 0
+#key_click 0
+#autoclick 0
+#always_on_top 1
+#wm_toolbar 0
+#jump_pointer 1
+#insert_blank_after_completion 1
+#integrate_completion_panel 0
+#dict_file /usr/share/X11/words.english
+#private_dict_weight 1
