@@ -23,11 +23,18 @@ if [ -f "$usermodmap" ]; then
     xmodmap "$usermodmap"
 fi
 
-xrdb -nocpp -merge $HOME/.dotfiles/etc/vxkbd/xvkbd-layout
+test -x /usr/bin/xvkbd && xrdb -nocpp -merge $HOME/.dotfiles/etc/xvkbd/xvkbd-layout
 
 #sxhkd &
 #exec swm
 #exec herbstluftwm
-touchegg >/dev/null &
+
+export GTK_IM_MODULE=uim
+export QT_IM_MODULE=uim
+uim-xim &
+export XMODIFIERS='@im=uim'
+
+test -x /usr/bin/touchegg && touchegg >/dev/null &
+
 cd $HOME
 exec pekwm
