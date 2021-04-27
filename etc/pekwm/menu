@@ -13,6 +13,7 @@ RootMenu = "Pekwm" {
 	}
 	Entry = "Web Browser" { Actions = "Exec $BROWSER" }
 	Entry = "Lock" { Actions = "Exec $_HOME/.dotfiles/bin/lock" }
+	Entry = "UIM" { Actions = "Exec env GDK_SCALE=2 GDK_DPI_SCALE=0.5 uim-toolbar-gtk3" }
 
 	Separator {}
 

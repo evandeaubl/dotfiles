@@ -29,12 +29,12 @@ test -x /usr/bin/xvkbd && xrdb -nocpp -merge $HOME/.dotfiles/etc/xvkbd/xvkbd-lay
 #exec swm
 #exec herbstluftwm
 
+test -x /usr/bin/touchegg && touchegg >/dev/null &
+
 export GTK_IM_MODULE=uim
 export QT_IM_MODULE=uim
 uim-xim &
 export XMODIFIERS='@im=uim'
-
-test -x /usr/bin/touchegg && touchegg >/dev/null &
 
 cd $HOME
 exec pekwm

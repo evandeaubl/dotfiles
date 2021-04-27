@@ -2,6 +2,7 @@ XTerm*faceName: DejaVuSansMono
 XTerm*faceSize: 10
 XTerm*background: black
 XTerm*foreground: white
+XTerm*ximFont: *
 Xft.dpi: 168
 Xcursor.theme: Breeze_Snow
 Xcursor.size: 64
